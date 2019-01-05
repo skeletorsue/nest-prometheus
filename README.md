@@ -6,6 +6,9 @@ This is a client application which fetches
 
 See `example/` folder for example outputs.
 
+## To Run
+`docker run -d -v $(pwd):/app -w /app --entrypoint sh -p 8080:8000 skeletorsue/nest-prometheus:latest`
+
 ## Dev environment
 `docker run --rm -ti -v $(pwd):/app -w /app --entrypoint sh -p 8080:8000 python:3-alpine`
 
