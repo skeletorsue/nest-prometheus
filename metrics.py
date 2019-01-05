@@ -37,15 +37,15 @@ def polling(napi, o):
     #w.get_temperature('celsius')['temp']
     for structure in napi.structures:
         for device in structure.thermostats:
-            g['is_online'].labels(structure.name, device.name).set(device.online)
-            g['has_leaf'].labels(structure.name, device.name).set(device.has_leaf)
-            g['is_using_emergency_heat'].labels(structure.name, device.name).set(device.is_using_emergency_heat)
-            g['target_temp'].labels(structure.name, device.name).set(device.target)
-            g['current_temp'].labels(structure.name, device.name).set(device.temperature)
-            g['humidity'].labels(structure.name, device.name).set(device.humidity)
-            g['state'].labels(structure.name, device.name, device.hvac_state).set((0 if device.hvac_state == "off" else 1))
-            g['mode'].labels(structure.name, device.name, device.mode).set((0 if device.mode == "off" else 1))
-            g['time_to_target'].labels(structure.name, device.name).set(''.join(x for x in device.time_to_target if x.isdigit()))
+            g['nest_is_online'].labels(structure.name, device.name).set(device.online)
+            g['nest_has_leaf'].labels(structure.name, device.name).set(device.has_leaf)
+            g['nest_is_using_emergency_heat'].labels(structure.name, device.name).set(device.is_using_emergency_heat)
+            g['nest_target_temp'].labels(structure.name, device.name).set(device.target)
+            g['nest_current_temp'].labels(structure.name, device.name).set(device.temperature)
+            g['nest_humidity'].labels(structure.name, device.name).set(device.humidity)
+            g['nest_state'].labels(structure.name, device.name, device.hvac_state).set((0 if device.hvac_state == "off" else 1))
+            g['nest_mode'].labels(structure.name, device.name, device.mode).set((0 if device.mode == "off" else 1))
+            g['nest_time_to_target'].labels(structure.name, device.name).set(''.join(x for x in device.time_to_target if x.isdigit()))
 
     g['weather_current_temp'].labels(city).set(w.get_temperature('fahrenheit')['temp'])
     g['weather_current_humidity'].labels(city).set(w.get_humidity())
