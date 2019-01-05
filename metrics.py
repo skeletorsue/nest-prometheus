@@ -9,15 +9,15 @@ import nest
 
 # Gauges
 g = {
-  'is_online': Gauge('is_online', 'Device connection status with the Nest service', ['structure', 'device']),
-  'has_leaf': Gauge('has_leaf', 'Displayed when the thermostat is set to an energy-saving temperature', ['structure', 'device']),
-  'target_temp': Gauge('target_temp', 'Desired temperature, in half degrees Fahrenheit (0.5°F)', ['structure', 'device']),
-  'current_temp': Gauge('current_temp', 'Temperature, measured at the device, in half degrees Fahrenheit (0.5°F)', ['structure', 'device']),
-  'humidity': Gauge('humidity', 'Humidity, in percent (%) format, measured at the device, rounded to the nearest 5%', ['structure', 'device']),
-  'state': Gauge('state', 'Indicates whether HVAC system is actively heating, cooling or is off. Use this value to indicate HVAC activity state', ['structure', 'device', 'hvac_state']),
-  'mode': Gauge('mode', 'Indicates HVAC system heating/cooling modes, like Heat•Cool for systems with heating and cooling capacity, or Eco Temperatures for energy savings', ['structure', 'device', 'mode']),
-  'time_to_target': Gauge('time_to_target', 'The time, in minutes, that it will take for the structure to reach the target temperature', ['structure', 'device']),
-  'is_using_emergency_heat': Gauge('is_using_emergency_heat', 'If this is using emergency heat or not', ['structure', 'device']),
+  'nest_is_online': Gauge('is_online', 'Device connection status with the Nest service', ['structure', 'device']),
+  'nest_has_leaf': Gauge('has_leaf', 'Displayed when the thermostat is set to an energy-saving temperature', ['structure', 'device']),
+  'nest_target_temp': Gauge('target_temp', 'Desired temperature, in half degrees Fahrenheit (0.5°F)', ['structure', 'device']),
+  'nest_current_temp': Gauge('current_temp', 'Temperature, measured at the device, in half degrees Fahrenheit (0.5°F)', ['structure', 'device']),
+  'nest_humidity': Gauge('humidity', 'Humidity, in percent (%) format, measured at the device, rounded to the nearest 5%', ['structure', 'device']),
+  'nest_state': Gauge('state', 'Indicates whether HVAC system is actively heating, cooling or is off. Use this value to indicate HVAC activity state', ['structure', 'device', 'hvac_state']),
+  'nest_mode': Gauge('mode', 'Indicates HVAC system heating/cooling modes, like Heat•Cool for systems with heating and cooling capacity, or Eco Temperatures for energy savings', ['structure', 'device', 'mode']),
+  'nest_time_to_target': Gauge('time_to_target', 'The time, in minutes, that it will take for the structure to reach the target temperature', ['structure', 'device']),
+  'nest_is_using_emergency_heat': Gauge('is_using_emergency_heat', 'If this is using emergency heat or not', ['structure', 'device']),
   
   'weather_current_temp': Gauge('weather_current_temp', 'Current temperature, in Fahrenheit', ['city']),
   'weather_current_humidity': Gauge('weather_current_humidity', 'Current humidity, in percent (%)', ['city']),
