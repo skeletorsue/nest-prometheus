@@ -11,14 +11,15 @@ import nest
 g = {
   'is_online': Gauge('is_online', 'Device connection status with the Nest service', ['structure', 'device']),
   'has_leaf': Gauge('has_leaf', 'Displayed when the thermostat is set to an energy-saving temperature', ['structure', 'device']),
-  'target_temp': Gauge('target_temp', 'Desired temperature, in half degrees Celsius (0.5°C)', ['structure', 'device']),
-  'current_temp': Gauge('current_temp', 'Temperature, measured at the device, in half degrees Celsius (0.5°C)', ['structure', 'device']),
+  'target_temp': Gauge('target_temp', 'Desired temperature, in half degrees Fahrenheit (0.5°F)', ['structure', 'device']),
+  'current_temp': Gauge('current_temp', 'Temperature, measured at the device, in half degrees Fahrenheit (0.5°F)', ['structure', 'device']),
   'humidity': Gauge('humidity', 'Humidity, in percent (%) format, measured at the device, rounded to the nearest 5%', ['structure', 'device']),
-  'state': Gauge('state', 'Indicates whether HVAC system is actively heating, cooling or is off. Use this value to indicate HVAC activity state', ['structure', 'device']),
-  'mode': Gauge('mode', 'Indicates HVAC system heating/cooling modes, like Heat•Cool for systems with heating and cooling capacity, or Eco Temperatures for energy savings', ['structure', 'device']),
+  'state': Gauge('state', 'Indicates whether HVAC system is actively heating, cooling or is off. Use this value to indicate HVAC activity state', ['structure', 'device', 'hvac_state']),
+  'mode': Gauge('mode', 'Indicates HVAC system heating/cooling modes, like Heat•Cool for systems with heating and cooling capacity, or Eco Temperatures for energy savings', ['structure', 'device', 'mode']),
   'time_to_target': Gauge('time_to_target', 'The time, in minutes, that it will take for the structure to reach the target temperature', ['structure', 'device']),
+  'is_using_emergency_heat': Gauge('is_using_emergency_heat', 'If this is using emergency heat or not', ['structure', 'device']),
   
-  'weather_current_temp': Gauge('weather_current_temp', 'Current temperature, in Celsius', ['city']),
+  'weather_current_temp': Gauge('weather_current_temp', 'Current temperature, in Fahrenheit', ['city']),
   'weather_current_humidity': Gauge('weather_current_humidity', 'Current humidity, in percent (%)', ['city']),
 }
 
@@ -38,14 +39,15 @@ def polling(napi, o):
         for device in structure.thermostats:
             g['is_online'].labels(structure.name, device.name).set(device.online)
             g['has_leaf'].labels(structure.name, device.name).set(device.has_leaf)
+            g['is_using_emergency_heat'].labels(structure.name, device.name).set(device.is_using_emergency_heat)
             g['target_temp'].labels(structure.name, device.name).set(device.target)
             g['current_temp'].labels(structure.name, device.name).set(device.temperature)
             g['humidity'].labels(structure.name, device.name).set(device.humidity)
-            g['state'].labels(structure.name, device.name).set((0 if device.hvac_state == "off" else 1))
-            g['mode'].labels(structure.name, device.name).set((0 if device.mode == "off" else 1))
+            g['state'].labels(structure.name, device.name, device.hvac_state).set((0 if device.hvac_state == "off" else 1))
+            g['mode'].labels(structure.name, device.name, device.mode).set((0 if device.mode == "off" else 1))
             g['time_to_target'].labels(structure.name, device.name).set(''.join(x for x in device.time_to_target if x.isdigit()))
 
-    g['weather_current_temp'].labels(city).set(w.get_temperature('celsius')['temp'])
+    g['weather_current_temp'].labels(city).set(w.get_temperature('fahrenheit')['temp'])
     g['weather_current_humidity'].labels(city).set(w.get_humidity())
 
 
