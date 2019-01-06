@@ -51,8 +51,8 @@ def polling(napi, o):
             g['nest_mode'].labels(structure.name, device.name).set((0 if device.mode == "off" else 1))
             g['nest_time_to_target'].labels(structure.name, device.name).set(''.join(x for x in device.time_to_target if x.isdigit()))
 
-            i['nest_hvac_state'].info({'state': device.hvac_state})
-            i['nest_hvac_mode'].info({'mode': device.mode})
+            i['nest_state'].info({'state': device.hvac_state, 'device': device.name, 'structure': structure.name})
+            i['nest_mode'].info({'mode': device.mode, 'device': device.name, 'structure': structure.name})
 
     g['weather_current_temp'].labels(city).set(w.get_temperature('fahrenheit')['temp'])
     g['weather_current_humidity'].labels(city).set(w.get_humidity())
