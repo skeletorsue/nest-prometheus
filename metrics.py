@@ -23,8 +23,8 @@ g = {
 }
 
 i = {
-	'nest_hvac_mode': Info('nest_hvac_mode', 'Indicates HVAC system heating/cooling modes'),
-	'nest_hvac_state': Info('nest_hvac_state', 'Indicates the current state of the HVAC system')
+	'nest_mode': Info('nest_mode', 'Indicates HVAC system heating/cooling modes'),
+	'nest_state': Info('nest_state', 'Indicates the current state of the HVAC system')
 }
 
 # Create a metric to track time spent and requests made.
