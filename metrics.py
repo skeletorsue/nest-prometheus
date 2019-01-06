@@ -31,10 +31,11 @@ i = {
 REQUEST_TIME = Summary('request_processing_seconds', 'Time spent processing request')
 # Decorate function with metric.
 @REQUEST_TIME.time()
-def polling(napi, o):
+def polling(napi, owm, owm_city_id):
     print("%s - Polling!" % time.time())
 
-    loc = o.get_location()
+    observation = owm.weather_at_id(int(owm_city_id))
+    loc = observation.get_location()
     city = loc.get_name()
     w = observation.get_weather()
 
@@ -83,7 +84,6 @@ if __name__ == '__main__':
     start_time = time.time()
 
     owm = pyowm.OWM(c['owm']['owm_id'])
-    observation = owm.weather_at_id(int(c['owm']['owm_city_id']))
 
     resp_time = time.time() - start_time
     sys.stderr.write("OpenWeatherMap API: %0.3fs\n" % resp_time)
@@ -94,5 +94,5 @@ if __name__ == '__main__':
     sys.stdout.write("Listening on port 8000...\n")
     
     while True:
-        polling(napi, observation)
-        time.sleep(60)
+        polling(napi, owm, c['owm']['owm_city_id'])
+        time.sleep(30)
