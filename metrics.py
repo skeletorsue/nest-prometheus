@@ -34,10 +34,15 @@ REQUEST_TIME = Summary('request_processing_seconds', 'Time spent processing requ
 def polling(napi, owm, owm_city_id):
     print("%s - Polling!" % time.time())
 
-    observation = owm.weather_at_id(int(owm_city_id))
-    loc = observation.get_location()
-    city = loc.get_name()
-    w = observation.get_weather()
+    try:
+        observation = owm.weather_at_id(int(owm_city_id))
+        loc = observation.get_location()
+        city = loc.get_name()
+        w = observation.get_weather()
+        g['weather_current_temp'].labels(city).set(w.get_temperature('fahrenheit')['temp'])
+        g['weather_current_humidity'].labels(city).set(w.get_humidity())
+    except pyowm.exceptions.api_call_error.APICallError as err:
+        print(err)
 
     #w.get_temperature('celsius')['temp']
     for structure in napi.structures:
@@ -54,9 +59,6 @@ def polling(napi, owm, owm_city_id):
 
             i['nest_state'].info({'state': device.hvac_state, 'device': device.name, 'structure': structure.name})
             i['nest_mode'].info({'mode': device.mode, 'device': device.name, 'structure': structure.name})
-
-    g['weather_current_temp'].labels(city).set(w.get_temperature('fahrenheit')['temp'])
-    g['weather_current_humidity'].labels(city).set(w.get_humidity())
 
 
 if __name__ == '__main__':
