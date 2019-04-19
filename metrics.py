@@ -17,6 +17,7 @@ g = {
 	'nest_mode': Gauge('nest_mode', 'Indicates HVAC system heating/cooling modes, like Heat•Cool for systems with heating and cooling capacity, or Eco Temperatures for energy savings', ['structure', 'device']),
 	'nest_time_to_target': Gauge('nest_time_to_target', 'The time, in minutes, that it will take for the structure to reach the target temperature', ['structure', 'device']),
 	'nest_is_using_emergency_heat': Gauge('nest_is_using_emergency_heat', 'If this is using emergency heat or not', ['structure', 'device']),
+	'nest_fan_running': Gauge('nest_fan_running', 'If the fan is running or not', ['structure', 'device']),
 
 	'weather_current_temp': Gauge('weather_current_temp', 'Current temperature, in Fahrenheit', ['city']),
 	'weather_current_humidity': Gauge('weather_current_humidity', 'Current humidity, in percent (%)', ['city']),
@@ -47,6 +48,7 @@ def polling(napi, owm, owm_city_id):
     #w.get_temperature('celsius')['temp']
     for structure in napi.structures:
         for device in structure.thermostats:
+            # print(device.fan)
             g['nest_is_online'].labels(structure.name, device.name).set(device.online)
             g['nest_has_leaf'].labels(structure.name, device.name).set(device.has_leaf)
             g['nest_is_using_emergency_heat'].labels(structure.name, device.name).set(device.is_using_emergency_heat)
@@ -55,6 +57,7 @@ def polling(napi, owm, owm_city_id):
             g['nest_humidity'].labels(structure.name, device.name).set(device.humidity)
             g['nest_state'].labels(structure.name, device.name).set((0 if device.hvac_state == "off" else 1))
             g['nest_mode'].labels(structure.name, device.name).set((0 if device.mode == "off" else 1))
+            g['nest_fan_running'].labels(structure.name, device.name).set((0 if not device.fan else 1))
             g['nest_time_to_target'].labels(structure.name, device.name).set(''.join(x for x in device.time_to_target if x.isdigit()))
 
             i['nest_state'].info({'state': device.hvac_state, 'device': device.name, 'structure': structure.name})
