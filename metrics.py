@@ -1,4 +1,4 @@
-from prometheus_client import start_http_server, Summary, Gauge, Info
+from prometheus_client import start_http_server, Summary, Gauge, Info, Counter
 import pyowm
 import configparser
 import os
@@ -7,7 +7,7 @@ import sys
 import nest
 
 # Gauges
-g = {
+gauges = {
     'nest_is_online':               Gauge('nest_is_online', 'Device connection status with the Nest service', ['structure', 'device']),
     'nest_has_leaf':                Gauge('nest_has_leaf', 'Displayed when the thermostat is set to an energy-saving temperature', ['structure', 'device']),
     'nest_target_temp':             Gauge('nest_target_temp', 'Desired temperature, in half degrees Fahrenheit (0.5°F)', ['structure', 'device']),
@@ -32,10 +32,21 @@ g = {
     'weather_current_humidity':     Gauge('weather_current_humidity', 'Current humidity, in percent (%)', ['city']),
 }
 
-i = {
+# Infos
+infos = {
     'nest_mode':  Info('nest_mode', 'Indicates HVAC system heating/cooling modes'),
     'nest_state': Info('nest_state', 'Indicates the current state of the HVAC system')
 }
+
+# Counters
+counters = {
+    'nest_fan_counter':     Counter('nest_fan_counter', 'The amount of time the fan has ran in seconds', ['structure', 'device']),
+    'nest_cooling_counter': Counter('nest_cooling_counter', 'The amount of time the HVAC has ran in cooling mode in seconds', ['structure', 'device']),
+    'nest_heating_counter': Counter('nest_heating_counter', 'The amount of time the HVAC has ran in heating mode in seconds', ['structure', 'device'])
+}
+
+# Last grab time keepers
+time_keeper = time.time()
 
 # Create a metric to track time spent and requests made.
 REQUEST_TIME = Summary('request_processing_seconds', 'Time spent processing request')
@@ -51,28 +62,45 @@ def polling(napi, owm, owm_city_id):
         loc = observation.get_location()
         city = loc.get_name()
         w = observation.get_weather()
-        g['weather_current_temp'].labels(city).set(w.get_temperature('fahrenheit')['temp'])
-        g['weather_current_humidity'].labels(city).set(w.get_humidity())
+        gauges['weather_current_temp'].labels(city).set(w.get_temperature('fahrenheit')['temp'])
+        gauges['weather_current_humidity'].labels(city).set(w.get_humidity())
     except pyowm.exceptions.api_call_error.APICallError as err:
         print(err)
 
     # w.get_temperature('celsius')['temp']
     for structure in napi.structures:
         for device in structure.thermostats:
-            # print(device.fan)
-            g['nest_is_online'].labels(structure.name, device.name).set(device.online)
-            g['nest_has_leaf'].labels(structure.name, device.name).set(device.has_leaf)
-            g['nest_is_using_emergency_heat'].labels(structure.name, device.name).set(device.is_using_emergency_heat)
-            g['nest_target_temp'].labels(structure.name, device.name).set(device.target)
-            g['nest_current_temp'].labels(structure.name, device.name).set(device.temperature)
-            g['nest_humidity'].labels(structure.name, device.name).set(device.humidity)
-            g['nest_state'].labels(structure.name, device.name).set((0 if device.hvac_state == "off" else 1))
-            g['nest_mode'].labels(structure.name, device.name).set((0 if device.mode == "off" else 1))
-            g['nest_fan_running'].labels(structure.name, device.name).set((0 if not device.fan else 1))
-            g['nest_time_to_target'].labels(structure.name, device.name).set(''.join(x for x in device.time_to_target if x.isdigit()))
+            global time_keeper
+            gauges['nest_is_online'].labels(structure.name, device.name).set(device.online)
+            gauges['nest_has_leaf'].labels(structure.name, device.name).set(device.has_leaf)
+            gauges['nest_is_using_emergency_heat'].labels(structure.name, device.name).set(device.is_using_emergency_heat)
+            gauges['nest_target_temp'].labels(structure.name, device.name).set(device.target)
+            gauges['nest_current_temp'].labels(structure.name, device.name).set(device.temperature)
+            gauges['nest_humidity'].labels(structure.name, device.name).set(device.humidity)
+            gauges['nest_state'].labels(structure.name, device.name).set((0 if device.hvac_state == "off" else 1))
+            gauges['nest_mode'].labels(structure.name, device.name).set((0 if device.mode == "off" else 1))
+            gauges['nest_fan_running'].labels(structure.name, device.name).set((0 if not device.fan else 1))
+            gauges['nest_time_to_target'].labels(structure.name, device.name).set(''.join(x for x in device.time_to_target if x.isdigit()))
 
-            i['nest_state'].info({'state': device.hvac_state, 'device': device.name, 'structure': structure.name})
-            i['nest_mode'].info({'mode': device.mode, 'device': device.name, 'structure': structure.name})
+            infos['nest_state'].info({'state': device.hvac_state, 'device': device.name, 'structure': structure.name})
+            infos['nest_mode'].info({'mode': device.mode, 'device': device.name, 'structure': structure.name})
+
+            if device.fan:
+                counters['nest_fan_counter'].labels(structure.name, device.name).inc((time.time() - time_keeper))
+            else:
+                counters['nest_fan_counter'].labels(structure.name, device.name).inc(0)
+
+            if device.hvac_state == "cooling":
+                counters['nest_cooling_counter'].labels(structure.name, device.name).inc((time.time() - time_keeper))
+            else:
+                counters['nest_cooling_counter'].labels(structure.name, device.name).inc(0)
+
+            if device.hvac_state == "heating":
+                counters['nest_heating_counter'].labels(structure.name, device.name).inc((time.time() - time_keeper))
+            else:
+                counters['nest_heating_counter'].labels(structure.name, device.name).inc(0)
+
+            time_keeper = time.time()
 
 
 if __name__ == '__main__':
